@@ -1,19 +1,19 @@
 # Rust build artifacts
 /target/
 **/*.rs.bk
-Cargo.lock
+
+# Example output files
+output.ppm
 
 # IDE and editor files
 .vscode/
 .idea/
 *.swp
-*.swo
-*~
-
-# macOS system files
 .DS_Store
-.AppleDouble
-.LSOverride
 
-# Misc
-*.log
+# Cargo lock file (optional, depending on your preference)
+# Cargo.lock
+
+# Temporary files
+*.tmp
+*~

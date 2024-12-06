@@ -1,5 +1,21 @@
 # Browser Engine Development Changelog
 
+## [0.1.8] - 2024-02-XX
+
+### Added
+- Created `simple_render.rs` example demonstrating rendering capabilities
+- Implemented PPM image export functionality
+- Added `RenderBox` struct to manage node lifetimes in rendering example
+
+### Improved
+- Enhanced example rendering script with better ownership management
+- Demonstrated basic canvas rendering and pixel manipulation
+- Improved lifetime and ownership handling in rendering example
+
+### Fixed
+- Resolved lifetime and ownership issues in rendering example
+- Improved node and styled node management
+
 ## [0.1.7] - 2024-02-XX
 
 ### Added
