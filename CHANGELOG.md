@@ -1,5 +1,24 @@
 # Browser Engine Development Changelog
 
+## [0.1.7] - 2024-02-XX
+
+### Added
+- Implemented `expanded_by` method for `Rect` to support box dimension calculations
+- Added box dimension methods to `Dimensions` struct:
+  * `content_box()`
+  * `padding_box()`
+  * `border_box()`
+  * `margin_box()`
+
+### Improved
+- Enhanced painting module with better type conversion
+- Improved test coverage for layout and painting modules
+- Added zero initialization method for `EdgeSizes`
+
+### Fixed
+- Resolved type conversion issues in painting module
+- Improved canvas and display list generation
+
 ## [0.1.6] - 2024-XX-XX
 
 ### Added
@@ -8,6 +27,17 @@
 - Detailed width computation following CSS specification
 - `lookup()` method for `StyledNode` to support fallback property resolution
 - `to_px()` method for `Value` enum to convert values to pixels
+- Comprehensive test suite for layout module
+  * Tests for block width calculation
+  * Tests for margin handling
+  * Tests for nested block layout
+  * Tests for block positioning
+  * Added `LayoutTreePrinter` trait for debugging
+- New painting module with basic rasterization support
+  * Display list generation
+  * Canvas rendering
+  * Background and border painting
+  * Comprehensive painting tests
 
 ### Changed
 - Enhanced block width calculation method
@@ -15,10 +45,14 @@
 - Improved dimension computation logic
 - Refactored layout methods to use references and resolve ownership issues
 - Simplified property lookup and value conversion
+- Expanded test coverage for layout module
+- Modularized rendering pipeline with dedicated painting module
 
 ### Fixed
 - Resolved compilation errors related to method availability
 - Addressed ownership and borrowing issues in layout module
+- Improved test infrastructure for layout components
+- Added basic painting infrastructure
 
 ## [0.1.5] - 2024-XX-XX
 
