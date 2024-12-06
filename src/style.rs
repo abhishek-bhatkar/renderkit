@@ -15,12 +15,12 @@ pub struct StyledNode<'a> {
 impl ElementData {
     /// Get the ID attribute of an element
     pub fn id(&self) -> Option<&String> {
-        self.attributes.get("id")
+        self.attrs.get("id")
     }
 
     /// Get the classes of an element
     pub fn classes(&self) -> HashSet<&str> {
-        match self.attributes.get("class") {
+        match self.attrs.get("class") {
             Some(classlist) => classlist.split(' ').collect(),
             None => HashSet::new(),
         }
@@ -106,8 +106,6 @@ pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a Stylesheet) -> StyledNode<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dom::{Node, NodeType, ElementData};
-    use crate::css::{Stylesheet, Rule, Selector, SimpleSelector, Value};
     use std::collections::HashMap;
 
     #[test]
@@ -118,7 +116,7 @@ mod tests {
 
         let elem = ElementData {
             tag_name: "div".to_string(),
-            attributes: attrs,
+            attrs,
         };
 
         // Test tag selector
