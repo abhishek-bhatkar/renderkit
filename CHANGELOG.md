@@ -1,5 +1,22 @@
 # Browser Engine Development Changelog
 
+## [0.1.2] - 2024-XX-XX
+
+### Added
+- Style module for CSS selector matching and style tree construction
+- Implemented `StyledNode` struct for managing styled DOM nodes
+- Added selector matching for tag names, classes, and IDs
+- Comprehensive unit tests for style module
+
+### Fixed
+- Resolved compilation errors in CSS and style modules
+- Added `Clone` and `PartialEq` derives for `Unit` and `Color` types
+- Corrected field name references in `ElementData`
+
+### Changed
+- Refactored CSS and style module type implementations
+- Improved error handling and type compatibility
+
 ## [0.1.1] - 2024-01-08
 
 ### Fixed
