@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 /// A Node in the DOM tree.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node {
     /// Data common to all nodes: list of children
     pub children: Vec<Node>,
@@ -10,14 +10,14 @@ pub struct Node {
 }
 
 /// Different types of DOM nodes we support
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NodeType {
     Text(String),
     Element(ElementData),
 }
 
 /// Data specific to element nodes
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ElementData {
     /// Tag name of the element
     pub tag_name: String,
