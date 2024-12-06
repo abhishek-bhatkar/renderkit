@@ -23,6 +23,10 @@ license = "MIT"
 name = "renderkit"
 path = "src/lib.rs"
 
+[[bin]]
+name = "renderkit"
+path = "src/main.rs"
+
 [[example]]
 name = "simple_render"
 path = "examples/simple_render.rs"
