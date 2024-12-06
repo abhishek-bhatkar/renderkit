@@ -1,16 +1,36 @@
 [package]
 name = "renderkit"
 version = "0.1.8"
-edition = "2024"
+edition = "2021"
 authors = ["Abhishek Bhatkar <bhatkar.abhishek81@gmail.com>"]
 description = "A minimal web rendering engine implemented in Rust"
 readme = "README.md"
 repository = "https://github.com/abhishek-bhatkar/renderkit"
 keywords = ["web", "rendering", "browser", "engine"]
-categories = ["rendering", "web-programming"]
+categories = ["web-programming", "graphics", "rendering"]
+license = "MIT"
 
 [dependencies]
-# Add your dependencies here
+# Add any dependencies your project might need
+# For example:
+# nom = "7.1.3"  # Parsing library
+# cssparser = "0.29.0"  # CSS parsing
 
 [dev-dependencies]
-# Add development dependencies here
+# Add development dependencies if needed
+
+[lib]
+name = "renderkit"
+path = "src/lib.rs"
+
+[[example]]
+name = "simple_render"
+path = "examples/simple_render.rs"
+
+[profile.dev]
+opt-level = 1  # Faster compilation for debug builds
+
+[profile.release]
+opt-level = 3  # Full optimizations for release builds
+lto = true     # Link-time optimization
+codegen-units = 1  # Improved optimizations

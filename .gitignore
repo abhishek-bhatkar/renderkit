@@ -4,6 +4,7 @@
 
 # Example output files
 output.ppm
+output_html.ppm
 
 # IDE and editor files
 .vscode/

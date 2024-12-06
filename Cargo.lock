@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "web-browser"
-version = "0.1.0"
+name = "renderkit"
+version = "0.1.8"
