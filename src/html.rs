@@ -1,42 +1,63 @@
-// HTML Parser Module
+// HTML Parser Module: The Digital HTML Translator
 // 
-// This module is like a translator that converts raw HTML text into a structured tree
-// It breaks down HTML into meaningful parts that a computer can understand
-// Think of it like taking a recipe and turning it into a step-by-step cooking guide
+// This module is like a skilled interpreter that converts raw HTML text into a structured tree
+// It breaks down HTML into meaningful, computer-friendly components
+// Think of it like taking a complex, handwritten recipe and turning it into a precise, step-by-step cooking guide
+// 
+// Key Responsibilities:
+// - Parse raw HTML text
+// - Create a structured Document Object Model (DOM)
+// - Handle nested elements, attributes, and text content
+// - Provide a robust, flexible parsing mechanism
 
 use std::collections::HashMap;
 use crate::dom;
 
-/// HTML Parser: The HTML Text Translator
+/// HTML Parser: The Text Navigation Expert
 /// 
-/// This struct keeps track of where we are while reading the HTML
-/// It's like a finger moving across a page, keeping track of which part we're currently reading
+/// This struct is like a skilled tour guide moving through the landscape of HTML text
+/// It keeps track of the current position, remembers the entire text, and knows how to navigate
+/// 
+/// Imagine it as a finger moving across a page, carefully reading and understanding each character
 pub struct Parser {
-    pos: usize,        // Current position in the text
-    input: String,     // The entire HTML text
+    /// Current reading position in the text
+    /// Like a bookmark that shows exactly where we are in the document
+    pos: usize,
+    
+    /// The entire HTML text to be parsed
+    /// Like the complete book we're reading through
+    input: String,
 }
 
 impl Parser {
-    /// Peek at the next character without moving forward
-    /// Like looking ahead one step without actually taking the step
+    /// Peek at the Next Character: Look Ahead Without Moving
+    /// 
+    /// Like glancing at the next word without actually turning the page
+    /// Provides a preview of what's coming next without consuming the character
     fn next_char(&self) -> char {
         self.input[self.pos..].chars().next().unwrap()
     }
 
-    /// Check if the text starts with a specific string
-    /// Like checking if a sentence begins with a certain word
+    /// Check Text Prefix: Matching the Start of a Sequence
+    /// 
+    /// Like checking if a sentence begins with a specific phrase
+    /// Useful for identifying tags, special characters, or specific patterns
     fn starts_with(&self, s: &str) -> bool {
         self.input[self.pos..].starts_with(s)
     }
 
-    /// Check if we've reached the end of the text
-    /// Like knowing when you've read the last page of a book
+    /// End of Text Detection: Journey's End
+    /// 
+    /// Like knowing when you've reached the last page of a book
+    /// Determines if we've consumed all available text
     fn eof(&self) -> bool {
         self.pos >= self.input.len()
     }
 
-    /// Move forward and "eat" the next character
+    /// Character Consumption: Moving Forward in the Text
+    /// 
     /// Like taking a bite out of a piece of text
+    /// Advances the reading position and returns the current character
     fn consume_char(&mut self) -> char {
         let mut iter = self.input[self.pos..].char_indices();
         let (_, cur_char) = iter.next().unwrap();
@@ -45,8 +66,10 @@ impl Parser {
         cur_char
     }
 
-    /// Consume characters as long as they match a certain condition
-    /// Like eating all the chocolate chips in a cookie
+    /// Conditional Character Consumption: Selective Text Eating
+    /// 
+    /// Like eating all the chocolate chips in a cookie that match a specific criteria
+    /// Continues consuming characters as long as they satisfy a given condition
     fn consume_while<F>(&mut self, test: F) -> String 
     where F: Fn(char) -> bool {
         let mut result = String::new();
@@ -56,21 +79,26 @@ impl Parser {
         result
     }
 
-    /// Skip over any whitespace (spaces, tabs, newlines)
-    /// Like smoothing out wrinkles in a piece of paper
+    /// Whitespace Skipping: Smoothing Out the Text
+    /// 
+    /// Like ironing out wrinkles in a piece of paper
+    /// Removes unnecessary spaces, tabs, and newlines
     fn consume_whitespace(&mut self) {
         self.consume_while(char::is_whitespace);
     }
 
-    /// Extract a tag name (like "div" or "p")
-    /// Like reading the label on a box
+    /// Tag Name Extraction: Reading Element Labels
+    /// 
+    /// Like reading the label on a box or a name tag
+    /// Identifies valid tag names using alphanumeric characters
     fn parse_tag_name(&mut self) -> String {
         self.consume_while(|c| matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9'))
     }
 
-    /// Parse a single node in the HTML
-    /// This could be an element (like a div) or just text
+    /// Parse a Single Node: Identifying the Next Piece of the Puzzle
+    /// 
     /// Like identifying whether something is a heading or just a sentence
+    /// Determines the type of node (element or text) and parses it accordingly
     fn parse_node(&mut self) -> dom::Node {
         match self.next_char() {
             '<' => self.parse_element(),
@@ -78,15 +106,18 @@ impl Parser {
         }
     }
 
-    /// Parse plain text content
+    /// Parse Plain Text Content: Reading the Words Between Tags
+    /// 
     /// Like reading the words between HTML tags
+    /// Consumes text until it encounters a tag or the end of the text
     fn parse_text(&mut self) -> dom::Node {
         dom::Node::text(self.consume_while(|c| c != '<'))
     }
 
-    /// Parse an HTML element with its attributes and children
-    /// This is like unpacking a nested Russian doll
-    /// It handles both opening and closing tags
+    /// Parse an HTML Element: Unpacking a Nested Russian Doll
+    /// 
+    /// Like unpacking a nested Russian doll
+    /// Handles both opening and closing tags, attributes, and child nodes
     fn parse_element(&mut self) -> dom::Node {
         // Opening tag
         assert!(self.consume_char() == '<');
@@ -106,8 +137,10 @@ impl Parser {
         dom::Node::elem(tag_name, attrs, children)
     }
 
-    /// Parse a single attribute (like class="example")
+    /// Parse a Single Attribute: Reading a Name Tag
+    /// 
     /// Like reading a name tag at a conference
+    /// Identifies the attribute name and value
     fn parse_attr(&mut self) -> (String, String) {
         let name = self.parse_tag_name();
         assert!(self.consume_char() == '=');
@@ -115,8 +148,10 @@ impl Parser {
         (name, value)
     }
 
-    /// Parse the value of an attribute
+    /// Parse the Value of an Attribute: Reading What's Written on the Name Tag
+    /// 
     /// Like reading what's written on the name tag
+    /// Consumes the attribute value until it encounters the closing quote
     fn parse_attr_value(&mut self) -> String {
         let quote = self.consume_char();
         assert!(quote == '"' || quote == '\'');
@@ -125,8 +160,10 @@ impl Parser {
         value
     }
 
-    /// Parse all attributes of an HTML element
+    /// Parse All Attributes of an HTML Element: Collecting Details on a Name Tag
+    /// 
     /// Like collecting all the details on a name tag
+    /// Continues parsing attributes until it encounters the closing tag
     fn parse_attributes(&mut self) -> dom::AttrMap {
         let mut attributes = HashMap::new();
         loop {
@@ -140,8 +177,10 @@ impl Parser {
         attributes
     }
 
-    /// Parse multiple nodes
+    /// Parse Multiple Nodes: Reading Multiple Paragraphs in a Document
+    /// 
     /// Like reading multiple paragraphs in a document
+    /// Continues parsing nodes until it encounters the end of the text or a closing tag
     fn parse_nodes(&mut self) -> Vec<dom::Node> {
         let mut nodes = Vec::new();
         loop {
@@ -155,7 +194,7 @@ impl Parser {
     }
 }
 
-/// Main parsing function: Convert HTML text into a structured tree
+/// Main Parsing Function: Converting HTML Text into a Structured Tree
 /// 
 /// # What this does:
 /// - Takes raw HTML text as input
