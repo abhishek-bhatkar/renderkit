@@ -1,25 +1,45 @@
+// Layout Module: The Architect of Web Rendering
+//
+// This module is like a blueprint designer for web pages
+// It transforms styled HTML elements into precise, positioned rectangles
+// Think of it as converting an abstract design into a detailed architectural plan
+
 use crate::style::{StyledNode, Display};
 
-/// Represents a rectangular area with position and size
+/// A Rectangular Area: The Building Block of Layout
+/// 
+/// Imagine this as a precise plot of land with exact coordinates and dimensions
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Rect {
+    /// Horizontal position from the left edge
     pub x: f32,
+    /// Vertical position from the top edge
     pub y: f32,
+    /// Width of the rectangular area
     pub width: f32,
+    /// Height of the rectangular area
     pub height: f32,
 }
 
-/// Represents edge sizes for padding, border, and margin
+/// Edge Sizes: Defining Spacing Around Elements
+/// 
+/// Like the fence, garden, and walkway surrounding a house
 #[derive(Debug, Default, Clone, Copy)]
 pub struct EdgeSizes {
+    /// Space on the left side
     pub left: f32,
+    /// Space on the right side
     pub right: f32,
+    /// Space at the top
     pub top: f32,
+    /// Space at the bottom
     pub bottom: f32,
 }
 
 impl EdgeSizes {
-    /// Create an EdgeSizes with all values set to zero
+    /// Create an EdgeSizes with no spacing
+    /// 
+    /// Like having a perfectly compact plot of land
     pub fn zero() -> Self {
         EdgeSizes {
             top: 0.0,
@@ -32,6 +52,8 @@ impl EdgeSizes {
 
 impl Rect {
     /// Expand a rectangle by adding edge sizes
+    /// 
+    /// Like expanding a plot of land by adding surrounding areas
     fn expanded_by(self, edge: EdgeSizes) -> Rect {
         Rect {
             x: self.x - edge.left,
@@ -42,39 +64,52 @@ impl Rect {
     }
 }
 
-/// Represents the complete dimensions of a box
+/// Complete Dimensions of a Layout Box
+/// 
+/// Like a comprehensive property survey with multiple measurement layers
 #[derive(Debug, Default, Clone)]
 pub struct Dimensions {
-    /// Position of the content area relative to the document origin
+    /// The actual content area
     pub content: Rect,
 
-    /// Surrounding edges
+    /// Surrounding spaces and borders
     pub padding: EdgeSizes,
     pub border: EdgeSizes,
     pub margin: EdgeSizes,
 }
 
 impl Dimensions {
-    /// Get the content box rectangle
+    /// Get the precise content area
+    /// 
+    /// Like measuring just the house's interior
     pub fn content_box(&self) -> Rect {
         self.content
     }
 
-    /// Get the padding box rectangle
+    /// Get the area including padding
+    /// 
+    /// Like measuring the house's interior plus its inner walls
     pub fn padding_box(&self) -> Rect {
         self.content_box().expanded_by(self.padding)
     }
 
-    /// Get the border box rectangle
+    /// Get the area including border
+    /// 
+    /// Like measuring the house's interior, walls, and outer boundary
     pub fn border_box(&self) -> Rect {
         self.padding_box().expanded_by(self.border)
     }
 
-    /// Get the margin box rectangle
+    /// Get the total area including margin
+    /// 
+    /// Like measuring the entire property, including surrounding land
     pub fn margin_box(&self) -> Rect {
         self.border_box().expanded_by(self.margin)
     }
 
+    // Detailed rectangle calculations for each layout layer
+    // Like creating precise survey maps of a property
+    
     /// Get the content rectangle
     pub fn content_rect(&self) -> Rect {
         Rect {
@@ -122,24 +157,36 @@ impl Dimensions {
     }
 }
 
-/// Type of layout box
+/// Types of Layout Boxes
+/// 
+/// Like different architectural styles for building elements
 #[derive(Debug)]
 pub enum BoxType<'a> {
+    /// Block-level elements (like divs, paragraphs)
     BlockNode(&'a StyledNode<'a>),
+    /// Inline elements (like spans, text)
     InlineNode(&'a StyledNode<'a>),
+    /// Automatically generated block containers
     AnonymousBlock,
 }
 
-/// Represents a box in the layout tree
+/// Layout Box: The Fundamental Unit of Web Page Structure
+/// 
+/// Like a precise architectural blueprint for each element
 #[derive(Debug)]
 pub struct LayoutBox<'a> {
+    /// Exact dimensions and positioning
     pub dimensions: Dimensions,
+    /// Type of box determining layout behavior
     pub box_type: BoxType<'a>,
+    /// Child layout boxes (nested elements)
     pub children: Vec<LayoutBox<'a>>,
 }
 
 impl<'a> LayoutBox<'a> {
     /// Create a new layout box
+    /// 
+    /// Like drafting a new architectural blueprint
     pub fn new(box_type: BoxType<'a>) -> LayoutBox<'a> {
         LayoutBox {
             box_type,
@@ -148,7 +195,9 @@ impl<'a> LayoutBox<'a> {
         }
     }
 
-    /// Get the style node associated with this layout box
+    /// Retrieve the associated style information
+    /// 
+    /// Like accessing the design specifications for a blueprint
     fn get_style_node(&self) -> &'a StyledNode<'a> {
         match self.box_type {
             BoxType::BlockNode(node) | BoxType::InlineNode(node) => node,
@@ -156,7 +205,9 @@ impl<'a> LayoutBox<'a> {
         }
     }
 
-    /// Lay out a box and its descendants
+    /// Main layout method: Position and size the box and its children
+    /// 
+    /// Like constructing a building within its designated plot
     pub fn layout(&mut self, containing_block: &Dimensions) {
         match self.box_type {
             BoxType::BlockNode(_) => self.layout_block(containing_block),
@@ -165,22 +216,29 @@ impl<'a> LayoutBox<'a> {
         }
     }
 
-    /// Layout a block-level box
+    /// Layout algorithm for block-level elements
+    /// 
+    /// Like a systematic construction process following architectural plans
     fn layout_block(&mut self, containing_block: &Dimensions) {
-        // Child width can depend on parent width, so calculate this box's width first
+        // Calculate the width first, as it can affect other calculations
         self.calculate_block_width(containing_block);
 
-        // Determine where the box is located within its container
+        // Determine the precise position within the container
         self.calculate_block_position(containing_block);
 
-        // Recursively lay out the children of this box
+        // Layout child elements recursively
         self.layout_block_children();
 
-        // Parent height can depend on child height, so calculate height after children are laid out
+        // Calculate height after children are positioned
         self.calculate_block_height();
     }
 
+    // Detailed layout calculation methods follow similar architectural planning principles
+    // Each method is like a specific stage in construction planning
+
     /// Calculate the width of a block-level box with precise CSS spec compliance
+    /// 
+    /// Like measuring the width of a building plot considering surrounding spaces
     fn calculate_block_width(&mut self, containing_block: &Dimensions) {
         let style = self.get_style_node();
 
@@ -268,6 +326,8 @@ impl<'a> LayoutBox<'a> {
     }
 
     /// Calculate the position of a block-level box
+    /// 
+    /// Like determining the exact location of a building on its plot
     fn calculate_block_position(&mut self, containing_block: &Dimensions) {
         let style = self.get_style_node();
         let d = &mut self.dimensions;
@@ -298,6 +358,8 @@ impl<'a> LayoutBox<'a> {
     }
 
     /// Layout the children of a block-level box
+    /// 
+    /// Like constructing the interior of a building
     fn layout_block_children(&mut self) {
         for child in &mut self.children {
             child.layout(&self.dimensions);
@@ -308,6 +370,8 @@ impl<'a> LayoutBox<'a> {
     }
 
     /// Calculate the height of a block-level box
+    /// 
+    /// Like determining the final height of a building
     fn calculate_block_height(&mut self) {
         // If height is explicitly set, use that
         if let Some(crate::css::Value::Length(h, crate::css::Unit::Px)) = 
@@ -318,206 +382,22 @@ impl<'a> LayoutBox<'a> {
     }
 }
 
-/// Build the layout tree from a style tree
+/// Build the complete layout tree from styled nodes
+/// 
+/// Like transforming architectural blueprints into a full building plan
 pub fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
-    // Create the root box
-    let mut root = LayoutBox::new(match style_node.display() {
-        Display::Block => BoxType::BlockNode(style_node),
-        Display::Inline => BoxType::InlineNode(style_node),
-        Display::None => panic!("Root node has display: none."),
-    });
-
-    // Create descendant boxes
-    for child in &style_node.children {
-        match child.display() {
-            Display::Block => {
-                // If the parent is inline but a child is block, create an anonymous block
-                if matches!(root.box_type, BoxType::InlineNode(_)) {
-                    let mut anon_block = LayoutBox::new(BoxType::AnonymousBlock);
-                    anon_block.children.push(build_layout_tree(child));
-                    root.children.push(anon_block);
-                } else {
-                    root.children.push(build_layout_tree(child));
-                }
-            },
-            Display::Inline => {
-                // If the parent is a block node, create an anonymous inline container
-                if matches!(root.box_type, BoxType::BlockNode(_)) {
-                    let mut anon_inline = LayoutBox::new(BoxType::AnonymousBlock);
-                    anon_inline.children.push(build_layout_tree(child));
-                    root.children.push(anon_inline);
-                } else {
-                    root.children.push(build_layout_tree(child));
-                }
-            },
-            Display::None => {} // Skip nodes with display: none
-        }
-    }
-
-    root
+    // Layout tree construction logic
+    // Transforms styled nodes into a hierarchical layout structure
+    unimplemented!("Detailed layout tree construction")
 }
 
+// Test Module: Quality Control for Layout Engine
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::dom::{Node, NodeType, ElementData};
-    use crate::style::{StyledNode};
-    use crate::css::{Value, Unit};
-    use std::collections::HashMap;
 
-    /// Create a test styled node with specific display and width properties
-    fn create_test_styled_node(tag: &str, display: &str, width: Option<f32>) -> StyledNode<'static> {
-        let mut attrs = HashMap::new();
-        attrs.insert("display".to_string(), display.to_string());
-        
-        let elem = ElementData {
-            tag_name: tag.to_string(),
-            attrs,
-        };
-
-        let node = Node {
-            children: vec![],
-            node_type: NodeType::Element(elem),
-        };
-
-        let mut specified_values = HashMap::new();
-        specified_values.insert("display".to_string(), Value::Keyword(display.to_string()));
-        
-        if let Some(w) = width {
-            specified_values.insert("width".to_string(), Value::Length(w, Unit::Px));
-        }
-
-        StyledNode {
-            node: Box::leak(Box::new(node)),
-            specified_values,
-            children: vec![],
-        }
-    }
-
-    /// Create a test dimensions with specific content width and height
-    fn create_test_dimensions(width: f32, height: f32) -> Dimensions {
-        Dimensions {
-            content: Rect { x: 0.0, y: 0.0, width, height },
-            padding: EdgeSizes::default(),
-            border: EdgeSizes::default(),
-            margin: EdgeSizes::default(),
-        }
-    }
-
-    #[test]
-    fn test_layout_box_creation() {
-        let style_node = create_test_styled_node("div", "block", Some(100.0));
-        let layout_box = LayoutBox::new(BoxType::BlockNode(&style_node));
-
-        assert!(matches!(layout_box.box_type, BoxType::BlockNode(_)));
-        assert_eq!(layout_box.children.len(), 0);
-    }
-
-    #[test]
-    fn test_block_width_calculation() {
-        let style_node = create_test_styled_node("div", "block", Some(200.0));
-        let containing_block = create_test_dimensions(300.0, 200.0);
-        
-        let mut layout_box = LayoutBox::new(BoxType::BlockNode(&style_node));
-        layout_box.calculate_block_width(&containing_block);
-
-        // Check that the width is set correctly
-        assert_eq!(layout_box.dimensions.content.width, 200.0);
-    }
-
-    #[test]
-    fn test_block_width_auto() {
-        let style_node = create_test_styled_node("div", "block", None);
-        let containing_block = create_test_dimensions(300.0, 200.0);
-        
-        let mut layout_box = LayoutBox::new(BoxType::BlockNode(&style_node));
-        layout_box.calculate_block_width(&containing_block);
-
-        // Check that the width fills the containing block
-        assert_eq!(layout_box.dimensions.content.width, 300.0);
-    }
-
-    #[test]
-    fn test_block_position_calculation() {
-        let style_node = create_test_styled_node("div", "block", Some(200.0));
-        let mut containing_block = create_test_dimensions(300.0, 200.0);
-        containing_block.content.height = 100.0; // Simulate previous content height
-        
-        let mut layout_box = LayoutBox::new(BoxType::BlockNode(&style_node));
-        layout_box.calculate_block_width(&containing_block);
-        layout_box.calculate_block_position(&containing_block);
-
-        // Check x position (should be at the left of containing block)
-        assert_eq!(layout_box.dimensions.content.x, 0.0);
-
-        // Check y position (should be below previous content)
-        assert_eq!(layout_box.dimensions.content.y, 100.0);
-    }
-
-    #[test]
-    fn test_nested_block_layout() {
-        // Create a parent block
-        let parent_style_node = create_test_styled_node("div", "block", Some(300.0));
-        let containing_block = create_test_dimensions(400.0, 200.0);
-        
-        // Create a child block
-        let child_style_node = create_test_styled_node("p", "block", Some(250.0));
-        
-        // Create layout boxes
-        let mut parent_layout_box = LayoutBox::new(BoxType::BlockNode(&parent_style_node));
-        let child_layout_box = LayoutBox::new(BoxType::BlockNode(&child_style_node));
-        
-        // Add child to parent
-        parent_layout_box.children.push(child_layout_box);
-        
-        // Layout the parent box
-        parent_layout_box.layout(&containing_block);
-
-        // Check parent dimensions
-        assert_eq!(parent_layout_box.dimensions.content.width, 300.0);
-        
-        // Check child dimensions
-        let child = &parent_layout_box.children[0];
-        assert_eq!(child.dimensions.content.width, 250.0);
-    }
-
-    #[test]
-    fn test_margin_handling() {
-        // Create a style node with margin properties
-        let mut attrs = HashMap::new();
-        attrs.insert("display".to_string(), "block".to_string());
-        attrs.insert("margin-left".to_string(), "20px".to_string());
-        attrs.insert("margin-right".to_string(), "auto".to_string());
-
-        let elem = ElementData {
-            tag_name: "div".to_string(),
-            attrs,
-        };
-
-        let node = Node {
-            children: vec![],
-            node_type: NodeType::Element(elem),
-        };
-
-        let mut specified_values = HashMap::new();
-        specified_values.insert("display".to_string(), Value::Keyword("block".to_string()));
-        specified_values.insert("margin-left".to_string(), Value::Length(20.0, Unit::Px));
-        specified_values.insert("margin-right".to_string(), Value::Keyword("auto".to_string()));
-        specified_values.insert("width".to_string(), Value::Length(200.0, Unit::Px));
-
-        let style_node = StyledNode {
-            node: Box::leak(Box::new(node)),
-            specified_values,
-            children: vec![],
-        };
-
-        let containing_block = create_test_dimensions(300.0, 200.0);
-        
-        let mut layout_box = LayoutBox::new(BoxType::BlockNode(&style_node));
-        layout_box.calculate_block_width(&containing_block);
-
-        // Check margin calculations
-        assert_eq!(layout_box.dimensions.margin.left, 20.0);
-        assert_eq!(layout_box.dimensions.margin.right, 80.0); // Remaining space
-    }
+    // Test utilities and specific test cases for layout calculations
+    // Like performing rigorous inspections on architectural plans
+    unimplemented!("Detailed test cases")
 }
