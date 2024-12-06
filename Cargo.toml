@@ -1,6 +1,16 @@
 [package]
-name = "web-browser"
-version = "0.1.0"
-edition = "2021"
+name = "renderkit"
+version = "0.1.8"
+edition = "2024"
+authors = ["Abhishek Bhatkar <bhatkar.abhishek81@gmail.com>"]
+description = "A minimal web rendering engine implemented in Rust"
+readme = "README.md"
+repository = "https://github.com/abhishek-bhatkar/renderkit"
+keywords = ["web", "rendering", "browser", "engine"]
+categories = ["rendering", "web-programming"]
 
 [dependencies]
+# Add your dependencies here
+
+[dev-dependencies]
+# Add development dependencies here
