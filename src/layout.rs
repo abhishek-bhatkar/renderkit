@@ -94,7 +94,7 @@ impl<'a> LayoutBox<'a> {
     }
 
     /// Lay out a box and its descendants
-    pub fn layout(&mut self, containing_block: Dimensions) {
+    pub fn layout(&mut self, containing_block: &Dimensions) {
         match self.box_type {
             BoxType::BlockNode(_) => self.layout_block(containing_block),
             BoxType::InlineNode(_) => {}, // TODO: Implement inline layout
@@ -103,7 +103,7 @@ impl<'a> LayoutBox<'a> {
     }
 
     /// Layout a block-level box
-    fn layout_block(&mut self, containing_block: Dimensions) {
+    fn layout_block(&mut self, containing_block: &Dimensions) {
         // Child width can depend on parent width, so calculate this box's width first
         self.calculate_block_width(containing_block);
 
@@ -117,16 +117,16 @@ impl<'a> LayoutBox<'a> {
         self.calculate_block_height();
     }
 
-    /// Calculate the width of a block-level box
-    fn calculate_block_width(&mut self, containing_block: Dimensions) {
+    /// Calculate the width of a block-level box with precise CSS spec compliance
+    fn calculate_block_width(&mut self, containing_block: &Dimensions) {
         let style = self.get_style_node();
 
         // Default values
         let auto = crate::css::Value::Keyword("auto".to_string());
         let zero = crate::css::Value::Length(0.0, crate::css::Unit::Px);
 
-        // Retrieve width and margin values
-        let width = style.value("width").unwrap_or(auto.clone());
+        // Retrieve width and margin values with fallback to shorthand properties
+        let mut width = style.value("width").unwrap_or(auto.clone());
         let mut margin_left = style.lookup("margin-left", "margin", &zero);
         let mut margin_right = style.lookup("margin-right", "margin", &zero);
 
@@ -136,16 +136,66 @@ impl<'a> LayoutBox<'a> {
         let padding_left = style.lookup("padding-left", "padding", &zero);
         let padding_right = style.lookup("padding-right", "padding", &zero);
 
-        // TODO: Implement width calculation logic
-        // This is a simplified version and needs to be expanded
-        let total_width = match (width, margin_left, margin_right) {
-            (crate::css::Value::Length(w, _), 
-             crate::css::Value::Length(ml, _), 
-             crate::css::Value::Length(mr, _)) => w + ml + mr,
-            _ => containing_block.content.width, // Default to containing block width
-        };
+        // Calculate total width of non-auto dimensions
+        let total = [
+            &margin_left, 
+            &margin_right, 
+            &border_left, 
+            &border_right,
+            &padding_left, 
+            &padding_right, 
+            &width
+        ].iter().map(|v| v.to_px()).sum::<f32>();
 
-        self.dimensions.content.width = total_width;
+        // Width constraint handling
+        let underflow = containing_block.content.width - total;
+
+        // CSS width calculation algorithm
+        match (width == auto, margin_left == auto, margin_right == auto) {
+            // Overconstrained: adjust right margin
+            (false, false, false) => {
+                margin_right = crate::css::Value::Length(
+                    margin_right.to_px() + underflow, 
+                    crate::css::Unit::Px
+                );
+            },
+
+            // Exactly one size is auto: adjust that size
+            (false, false, true) => { 
+                margin_right = crate::css::Value::Length(underflow, crate::css::Unit::Px); 
+            },
+            (false, true, false) => { 
+                margin_left = crate::css::Value::Length(underflow, crate::css::Unit::Px); 
+            },
+
+            // Width is auto: handle auto margins
+            (true, _, _) => {
+                // Reset auto margins to 0
+                if margin_left == auto { margin_left = zero.clone(); }
+                if margin_right == auto { margin_right = zero.clone(); }
+
+                if underflow >= 0.0 {
+                    // Expand width to fill underflow
+                    width = crate::css::Value::Length(underflow, crate::css::Unit::Px);
+                } else {
+                    // Width can't be negative, adjust right margin
+                    width = zero.clone();
+                    margin_right = crate::css::Value::Length(
+                        margin_right.to_px() + underflow, 
+                        crate::css::Unit::Px
+                    );
+                }
+            },
+
+            // Both margins auto: center the box
+            (false, true, true) => {
+                margin_left = crate::css::Value::Length(underflow / 2.0, crate::css::Unit::Px);
+                margin_right = crate::css::Value::Length(underflow / 2.0, crate::css::Unit::Px);
+            }
+        }
+
+        // Store calculated dimensions
+        self.dimensions.content.width = width.to_px();
         self.dimensions.margin.left = margin_left.to_px();
         self.dimensions.margin.right = margin_right.to_px();
         self.dimensions.border.left = border_left.to_px();
@@ -155,7 +205,7 @@ impl<'a> LayoutBox<'a> {
     }
 
     /// Calculate the position of a block-level box
-    fn calculate_block_position(&mut self, containing_block: Dimensions) {
+    fn calculate_block_position(&mut self, containing_block: &Dimensions) {
         let style = self.get_style_node();
         let d = &mut self.dimensions;
 
@@ -187,7 +237,7 @@ impl<'a> LayoutBox<'a> {
     /// Layout the children of a block-level box
     fn layout_block_children(&mut self) {
         for child in &mut self.children {
-            child.layout(self.dimensions);
+            child.layout(&self.dimensions);
             
             // Increment the height so each child is laid out below the previous one
             self.dimensions.content.height += child.dimensions.margin_box().height;

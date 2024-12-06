@@ -60,6 +60,16 @@ impl Selector {
     }
 }
 
+impl Value {
+    /// Convert a value to pixels, defaulting to 0 for non-length values
+    pub fn to_px(&self) -> f32 {
+        match *self {
+            Value::Length(f, Unit::Px) => f,
+            _ => 0.0
+        }
+    }
+}
+
 struct Parser {
     pos: usize,
     input: String,

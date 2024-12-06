@@ -1,5 +1,25 @@
 # Browser Engine Development Changelog
 
+## [0.1.6] - 2024-XX-XX
+
+### Added
+- Precise CSS width calculation algorithm for block layout
+- Comprehensive handling of auto margins and width constraints
+- Detailed width computation following CSS specification
+- `lookup()` method for `StyledNode` to support fallback property resolution
+- `to_px()` method for `Value` enum to convert values to pixels
+
+### Changed
+- Enhanced block width calculation method
+- More robust handling of different width and margin scenarios
+- Improved dimension computation logic
+- Refactored layout methods to use references and resolve ownership issues
+- Simplified property lookup and value conversion
+
+### Fixed
+- Resolved compilation errors related to method availability
+- Addressed ownership and borrowing issues in layout module
+
 ## [0.1.5] - 2024-XX-XX
 
 ### Added
