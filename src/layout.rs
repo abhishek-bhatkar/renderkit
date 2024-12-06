@@ -30,6 +30,35 @@ pub struct Dimensions {
     pub margin: EdgeSizes,
 }
 
+impl Dimensions {
+    /// The area covered by the content area plus its padding
+    fn padding_box(&self) -> Rect {
+        self.content.expanded_by(self.padding)
+    }
+
+    /// The area covered by the content area plus padding and borders
+    fn border_box(&self) -> Rect {
+        self.padding_box().expanded_by(self.border)
+    }
+
+    /// The area covered by the content area plus padding, borders, and margin
+    fn margin_box(&self) -> Rect {
+        self.border_box().expanded_by(self.margin)
+    }
+}
+
+impl Rect {
+    /// Expand a rectangle by adding edge sizes
+    fn expanded_by(self, edge: EdgeSizes) -> Rect {
+        Rect {
+            x: self.x - edge.left,
+            y: self.y - edge.top,
+            width: self.width + edge.left + edge.right,
+            height: self.height + edge.top + edge.bottom,
+        }
+    }
+}
+
 /// Type of layout box
 #[derive(Debug)]
 pub enum BoxType<'a> {
@@ -54,6 +83,125 @@ impl<'a> LayoutBox<'a> {
             dimensions: Dimensions::default(),
             children: Vec::new(),
         }
+    }
+
+    /// Get the style node associated with this layout box
+    fn get_style_node(&self) -> &'a StyledNode<'a> {
+        match self.box_type {
+            BoxType::BlockNode(node) | BoxType::InlineNode(node) => node,
+            BoxType::AnonymousBlock => panic!("Anonymous block has no style node"),
+        }
+    }
+
+    /// Lay out a box and its descendants
+    pub fn layout(&mut self, containing_block: Dimensions) {
+        match self.box_type {
+            BoxType::BlockNode(_) => self.layout_block(containing_block),
+            BoxType::InlineNode(_) => {}, // TODO: Implement inline layout
+            BoxType::AnonymousBlock => self.layout_block(containing_block),
+        }
+    }
+
+    /// Layout a block-level box
+    fn layout_block(&mut self, containing_block: Dimensions) {
+        // Child width can depend on parent width, so calculate this box's width first
+        self.calculate_block_width(containing_block);
+
+        // Determine where the box is located within its container
+        self.calculate_block_position(containing_block);
+
+        // Recursively lay out the children of this box
+        self.layout_block_children();
+
+        // Parent height can depend on child height, so calculate height after children are laid out
+        self.calculate_block_height();
+    }
+
+    /// Calculate the width of a block-level box
+    fn calculate_block_width(&mut self, containing_block: Dimensions) {
+        let style = self.get_style_node();
+
+        // Default values
+        let auto = crate::css::Value::Keyword("auto".to_string());
+        let zero = crate::css::Value::Length(0.0, crate::css::Unit::Px);
+
+        // Retrieve width and margin values
+        let width = style.value("width").unwrap_or(auto.clone());
+        let mut margin_left = style.lookup("margin-left", "margin", &zero);
+        let mut margin_right = style.lookup("margin-right", "margin", &zero);
+
+        let border_left = style.lookup("border-left-width", "border-width", &zero);
+        let border_right = style.lookup("border-right-width", "border-width", &zero);
+
+        let padding_left = style.lookup("padding-left", "padding", &zero);
+        let padding_right = style.lookup("padding-right", "padding", &zero);
+
+        // TODO: Implement width calculation logic
+        // This is a simplified version and needs to be expanded
+        let total_width = match (width, margin_left, margin_right) {
+            (crate::css::Value::Length(w, _), 
+             crate::css::Value::Length(ml, _), 
+             crate::css::Value::Length(mr, _)) => w + ml + mr,
+            _ => containing_block.content.width, // Default to containing block width
+        };
+
+        self.dimensions.content.width = total_width;
+        self.dimensions.margin.left = margin_left.to_px();
+        self.dimensions.margin.right = margin_right.to_px();
+        self.dimensions.border.left = border_left.to_px();
+        self.dimensions.border.right = border_right.to_px();
+        self.dimensions.padding.left = padding_left.to_px();
+        self.dimensions.padding.right = padding_right.to_px();
+    }
+
+    /// Calculate the position of a block-level box
+    fn calculate_block_position(&mut self, containing_block: Dimensions) {
+        let style = self.get_style_node();
+        let d = &mut self.dimensions;
+
+        // Default to zero
+        let zero = crate::css::Value::Length(0.0, crate::css::Unit::Px);
+
+        // Set margins, borders, and padding
+        d.margin.top = style.lookup("margin-top", "margin", &zero).to_px();
+        d.margin.bottom = style.lookup("margin-bottom", "margin", &zero).to_px();
+        d.border.top = style.lookup("border-top-width", "border-width", &zero).to_px();
+        d.border.bottom = style.lookup("border-bottom-width", "border-width", &zero).to_px();
+        d.padding.top = style.lookup("padding-top", "padding", &zero).to_px();
+        d.padding.bottom = style.lookup("padding-bottom", "padding", &zero).to_px();
+
+        // Position the box
+        d.content.x = containing_block.content.x + 
+                      d.margin.left + 
+                      d.border.left + 
+                      d.padding.left;
+
+        // Position below previous boxes in the container
+        d.content.y = containing_block.content.height + 
+                      containing_block.content.y + 
+                      d.margin.top + 
+                      d.border.top + 
+                      d.padding.top;
+    }
+
+    /// Layout the children of a block-level box
+    fn layout_block_children(&mut self) {
+        for child in &mut self.children {
+            child.layout(self.dimensions);
+            
+            // Increment the height so each child is laid out below the previous one
+            self.dimensions.content.height += child.dimensions.margin_box().height;
+        }
+    }
+
+    /// Calculate the height of a block-level box
+    fn calculate_block_height(&mut self) {
+        // If height is explicitly set, use that
+        if let Some(crate::css::Value::Length(h, crate::css::Unit::Px)) = 
+            self.get_style_node().value("height") {
+            self.dimensions.content.height = h;
+        }
+        // Otherwise, keep the height set by layout_block_children
     }
 }
 

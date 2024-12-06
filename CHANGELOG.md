@@ -1,5 +1,18 @@
 # Browser Engine Development Changelog
 
+## [0.1.5] - 2024-XX-XX
+
+### Added
+- Comprehensive block layout implementation
+- Methods for calculating box dimensions and positioning
+- Support for width, margin, padding, and border calculations
+- Enhanced layout tree traversal with top-down and bottom-up passes
+
+### Changed
+- Refined block layout algorithm based on Matt Brubeck's tutorial
+- Improved layout box dimension calculations
+- Added methods for expanding rectangles and calculating box areas
+
 ## [0.1.4] - 2024-XX-XX
 
 ### Added
