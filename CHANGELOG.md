@@ -1,5 +1,29 @@
 # Browser Engine Development Changelog
 
+## [0.1.4] - 2024-XX-XX
+
+### Added
+- Enhanced layout tree construction with mixed display type handling
+- Support for anonymous block and inline containers
+- Improved display property detection and processing
+
+### Changed
+- Refined layout tree generation algorithm
+- Removed unused inline container method
+- Improved test coverage for layout module
+
+## [0.1.3] - 2024-XX-XX
+
+### Added
+- Layout module for creating layout trees
+- Implemented `LayoutBox` and `Dimensions` structs
+- Support for block and inline layout
+- Anonymous block box generation
+- Comprehensive unit tests for layout tree construction
+
+### Changed
+- Updated library module exports to include layout functionality
+
 ## [0.1.2] - 2024-XX-XX
 
 ### Added
@@ -25,6 +49,8 @@
 - Removed unused `starts_with` method in CSS parser
 - Fixed irrefutable pattern matching in CSS tests
 - Cleaned up unused code warnings
+- Code cleanup
+- Warning resolution
 
 ## [0.1.0] - 2024-01-07
 
@@ -90,7 +116,6 @@
   - CSS declaration parsing
 
 ### Not Yet Implemented
-- Layout engine
 - Rendering engine
 - Error handling for malformed HTML/CSS
 - Support for:
@@ -101,8 +126,6 @@
   - Complex CSS rules
 
 ### Next Steps
-- Develop style tree construction
-- Implement layout engine
-- Create rendering engine
+- Implement rendering engine
 - Add more comprehensive error handling
 - Expand CSS parsing capabilities
